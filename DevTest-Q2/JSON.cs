@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using Newtonsoft.Json;
 
@@ -617,7 +618,6 @@
                 sbString.AppendFormat("</table>");
             }
             return (sbString.ToString());
-
         }
 
         public JsonObjectList(bool boIsArrayList, List<JsonObject> ljoJsonObjectList)
@@ -820,79 +820,98 @@
         /************************************************************/
         public bool ParseStream(Stream stream)
         {
-            try
+            using (StreamReader sr = new StreamReader(stream))
+            using (JsonReader reader = new JsonTextReader(sr))
             {
-                using (StreamReader sr = new StreamReader(stream))
-                using (JsonReader reader = new JsonTextReader(sr))
+                JsonObjectListBuilder jObjectBuilderRoots = new JsonObjectListBuilder();
+                Stack<JsonObjectBuilder> jObjectBuilderStack = new Stack<JsonObjectBuilder>();
+
+                reader.Read();
+
+                JsonObjectBuilder jObjectRoot = new JsonObjectBuilder();
+                JsonObjectBuilder jObjectParent = null;
+                JsonObjectBuilder jObjectBuilder = null;
+
+                jObjectBuilderStack.Push(jObjectRoot);
+
+                while (reader.Read())
                 {
-                    var jObjectBuilderRoots = new JsonObjectListBuilder();
-                    while (reader.Read())
+                    switch (reader.TokenType)
                     {
-                        var jObjectBuilderRoot = new JsonObjectBuilder();
-                        var jObjectBuilderStack = new Stack<JsonObjectBuilder>(new[] { jObjectBuilderRoot });
-                        jObjectBuilderRoots.Add(jObjectBuilderRoot);
-
-                        while (jObjectBuilderStack.Count > 0)
-                        {
-                            var jObjectBuilder = jObjectBuilderStack.Peek();
-                            switch (reader.TokenType)
+                        case JsonToken.StartObject:
+                            jObjectParent = jObjectBuilderStack.Peek();
+                            if (jObjectParent.ChildJsonObjectList.IsArrayList)
                             {
-                                case JsonToken.PropertyName:
-                                    var newJsonProperty = new JsonObjectBuilder{ Name = String.Format("{0}", reader.Value) };
-                                    jObjectBuilder.ChildJsonObjectList.Add(newJsonProperty);
-                                    jObjectBuilderStack.Push(newJsonProperty);
-                                    break;
-
-                                case JsonToken.StartObject:
-                                    if (jObjectBuilder.IsArrayObject)
-                                    {
-                                        var newJsonArrayItem = new JsonObjectBuilder();
-                                        jObjectBuilder.ChildJsonObjectList.Add(newJsonArrayItem);
-                                        jObjectBuilderStack.Push(newJsonArrayItem);
-                                    }
-                                    break;
-
-                                case JsonToken.StartArray:
-                                    jObjectBuilder.IsArrayObject = true;
-                                    break;
-
-                                case JsonToken.EndObject:
-                                case JsonToken.EndArray:
-                                    jObjectBuilderStack.Pop();
-                                    break;
-
-                                case JsonToken.Bytes:
-                                case JsonToken.Comment:
-                                case JsonToken.None:
-                                case JsonToken.Raw:
-                                case JsonToken.Undefined:
-                                    break;
-
-                                default:
-                                    if (jObjectBuilder.IsArrayObject)
-                                    {
-                                        var newJsonValueItem = new JsonObjectBuilder();
-                                        jObjectBuilder.ChildJsonObjectList.Add(newJsonValueItem);
-                                        jObjectBuilderStack.Push(newJsonValueItem);
-                                        jObjectBuilder = newJsonValueItem;
-                                    }
-
-                                    jObjectBuilder.JsonValueType = GetJsonValueTypeAndValue(reader.TokenType, reader.Value, out string szRawValue, out object oOutputValue);
-                                    jObjectBuilder.Value = oOutputValue;
-                                    jObjectBuilder.RawValue = szRawValue;
-                                    jObjectBuilderStack.Pop();
-                                    break;
+                                jObjectBuilder = new JsonObjectBuilder();
+                                jObjectBuilder.IsArrayObject = true;
+                                jObjectBuilder.Name = $"Item{jObjectParent.ChildJsonObjectList.Count + 1}";
+                                jObjectBuilderStack.Push(jObjectBuilder);
+                                jObjectParent.ChildJsonObjectList.Add(jObjectBuilder);
                             }
-                            reader.Read();
-                        }
-                    }
+                            break;
 
-                    m_jolJsonObjectList = new JsonObjectList(false, jObjectBuilderRoots.ToJsonObjectList());
+                        case JsonToken.EndObject:
+                            if (jObjectBuilderStack.Count > 0)
+                            {
+                                jObjectBuilderStack.Pop();
+                            }
+                            break;
+
+                        case JsonToken.StartArray:
+                            jObjectBuilder = jObjectBuilderStack.Peek();
+                            jObjectBuilder.ChildJsonObjectList.IsArrayList = true;
+                            break;
+
+                        case JsonToken.EndArray:
+                            jObjectBuilder = jObjectBuilderStack.Pop();
+                            break;
+
+                        case JsonToken.PropertyName:
+                            jObjectParent = jObjectBuilderStack.Peek();
+                            jObjectBuilder = new JsonObjectBuilder();
+                            jObjectBuilder.Name = String.Format("{0}", reader.Value);
+                            jObjectBuilderStack.Push(jObjectBuilder);
+                            jObjectParent.ChildJsonObjectList.Add(jObjectBuilder);
+                            break;
+
+                        case JsonToken.Boolean:
+                        case JsonToken.Float:
+                        case JsonToken.Date:
+                        case JsonToken.Integer:
+                        case JsonToken.Null:
+                        case JsonToken.String:
+                            jObjectParent = jObjectBuilderStack.Peek();
+                            if (jObjectParent.ChildJsonObjectList.IsArrayList)
+                            {
+                                jObjectBuilder = new JsonObjectBuilder();
+                                jObjectBuilder.IsArrayObject = true;
+                                jObjectBuilder.Name = $"Item{jObjectParent.ChildJsonObjectList.Count + 1}";
+                                jObjectParent.ChildJsonObjectList.Add(jObjectBuilder);
+                            }
+                            else
+                            {
+                                jObjectBuilder = jObjectBuilderStack.Pop();
+                                jObjectParent = jObjectBuilderStack.Peek();
+                            }
+
+                            jObjectBuilder.JsonValueType = GetJsonValueTypeAndValue(reader.TokenType, reader.Value, out string szRawValue, out object oOutputValue);
+                            jObjectBuilder.Value = oOutputValue;
+                            jObjectBuilder.RawValue = szRawValue;
+                            break;
+
+                        case JsonToken.Bytes:
+                        case JsonToken.Comment:
+                        case JsonToken.None:
+                        case JsonToken.Raw:
+                        case JsonToken.Undefined:
+                        default:
+                            return false;
+                    }
                 }
-            }
-            catch (Exception)
-            {
-                return false;
+
+                m_jolJsonObjectList = new JsonObjectList(false, jObjectRoot.ChildJsonObjectList.GetListOfJsonObjectWorkingObjects()
+                    .Select(i => i.ToJsonObject())
+                    .ToList());
             }
             
             return true;
