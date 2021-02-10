@@ -1,0 +1,37 @@
+.DataViewCenter{text-align:center;clear:both;padding-top:1px;padding-bottom:1px}
+.DataViewWraper{width:550px;margin:auto;padding:15px}
+.DataViewText{height:20px;line-height:20px;background-repeat:no-repeat;background-position:bottom left;font-size:18px;clear:right;padding-left:20px;padding-top:0;color:#1f4188}
+
+.FormRequiredDescription{text-align:right;float:right}
+.FormItem{clear:both;padding-top:1px;padding-bottom:1px;width:704px;margin:auto}
+.FormLabel,.NarrowFormLabel,.FormLabelExtraDescription{width:275px;text-align:right;float:left;margin-top:4px;padding-right:2px;color:#0087f7}
+.FormLabelExtraDescription{margin-top:0}
+.NarrowFormLabel{width:140px}
+.FormValidationText,.FormOptionalValidationText,.NarrowFormValidationText{text-align:left;margin-top:4px;float:left;clear:right;padding-left:2px;height:16px}
+.FormWarningText{color:#ff931e}
+.FormValidationText{color:#f00}
+.FormOptionalValidationText{padding-left:7px}
+.NarrowFormValidationText{text-align:right;color:#1f4188;width:43px}
+.FormInput{text-align:left;float:left}
+.FormInputTextOnly,.FormInputText,.FormItemExtraDescription{text-align:left;float:left;margin-top:4px;padding-left:2px;font-weight:bold}
+.FormInputText{height:18px}.FormTextExtraDescription,.FormItemAdditionalDescription{font-size:10px;color:#f00;font-weight:normal}
+.FormSubmit{text-align:center;margin-top:20px}
+.InputTextField,.InPlaceTextBox,.TextBoxWatermark,.SmallInputTextField{border:solid 1px #7f9db9;padding:2px;width:200px}
+.InputTextFieldMedium{border:solid 1px #7f9db9;width:80px;padding:2px}
+.InputTextFieldSmall{border:solid 1px #7f9db9;width:50px;padding:2px}
+.TextBoxWatermark,.SmallInputTextField{font-size:10px}
+.TextBoxWatermark{color:#aaa}
+.InputDropDownList{border:solid 1px #7f9db9;width:212px;padding:2px}
+.InputDropDownListMedium{border:solid 1px #7f9db9;width:92px;padding:2px}
+.InputDropDownListSmall{border:solid 1px #7f9db9;width:62px;padding:2px}
+
+.ErrorMessage,.FormErrorMessage,.WarningMessage,.InfoMessage,.SuccessMessage{display:block;padding:17px 18px;margin-bottom:18px;-webkit-border-radius:3px;border-radius:3px;width:400px;padding:20px 20px 40px 100px;font-weight:bold;text-align:center;margin:20px auto}
+.ErrorMessage,.FormErrorMessage{background-image:url('../Images/ErrorBig.jpg');background-repeat:no-repeat;background-position:center left;color:#f00;background-color:#ffd9d9;border:1px solid #f00}
+.SuccessMessage{background-image:url('../Images/SuccessBig.jpg');background-repeat:no-repeat;background-position:center left;background-color:#cfc;border:1px solid #0a0;color:#0a0}
+.WarningMessage{background-image:url('../Images/WarningBig.jpg');background-repeat:no-repeat;background-position:center left;background-color:#ffffd9;border:1px solid #ff931e;color:#ff931e}
+.InfoMessage{background-image:url('../Images/InfoBig.jpg');background-repeat:no-repeat;background-position:center left;background-color:#d9edff;border:1px solid #0087f7;color:#0087f7}
+
+.ContentRight{float:none;right:300px;margin-bottom:20px}
+.ContentHeader{height:25px;line-height:25px;font-size:18px;clear:both;padding-top:0;color:#0087f7}
+
+.ContentBodyText{font-size:1rem;float:none;clear:left;width:670px;padding-left:22px;margin-top:7px;text-align:center}
